@@ -1,0 +1,7 @@
+{
+  "prefix": "YOUR_BOT_PREFIX_HERE",
+  "token": "YOUR_BOT_TOKEN_HERE",
+  "licence_link": "LICENSE_LINK_HERE",
+  "vip_role_id": VIP_ROLE_ID_HERE,
+  "log_channel_id": LOG_CHANNEL_ID_HERE
+}

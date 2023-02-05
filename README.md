@@ -1,0 +1,1 @@
+For my friend who is a moderator in a forum, a simple discord bot that sends users' licenses to the moderator panel and gives users time-based roles according to the incoming data.
