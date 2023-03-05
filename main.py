@@ -107,7 +107,11 @@ async def check_expired_licenses():
         for user_id, license_code, expiration_date in expired_licenses:
             user = bot.get_user(user_id)
             guild = discord.utils.find(lambda g: user in g.members, bot.guilds)
+            if guild is None:
+                continue
             member = discord.utils.get(guild.members, id=user_id)
+            if member is None:
+                continue
             role = discord.utils.get(guild.roles, id=config["vip_role_id"])
 
             await member.remove_roles(role)
