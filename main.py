@@ -22,11 +22,23 @@ bot = Bot(command_prefix=commands.when_mentioned_or(config["prefix"]), intents=i
 
 @bot.command()
 async def licence(ctx, licence_code: str):
-    # Check if user already has a Member++ role
-    if config["vip_role_id"] in [role.id for role in ctx.author.roles]:
-        await ctx.send(f'{ctx.author.mention} Zaten Member++ rolüne sahipsiniz.')
+
+    if licence_code == "XXXXXXXXXX" or licence_code == "YYYYYYYYY":
+        await ctx.send("Bu lisans anahtarı geçersizdir.")
         return
 
+    # check if the context is from a guild or DM
+    if ctx.guild is None:
+        guild = bot.get_guild(config["guild_id"])  # get the guild using its ID
+        member = guild.get_member(ctx.author.id)  # get the member object in the guild
+    else:
+        guild = ctx.guild
+        member = ctx.author
+
+    # Check if user already has a Member++ role
+    if config["vip_role_id"] in [role.id for role in member.roles]:
+        await ctx.send(f'{ctx.author.mention} Zaten Member++ rolüne sahipsiniz.')
+        return
     # Sending requests to the moderator panel.
     s = requests.session()
     payload = {
@@ -63,8 +75,8 @@ async def licence(ctx, licence_code: str):
             left_hours = diff_date.total_seconds() // 3600
 
             if left_hours >= 24:
-                role = discord.utils.get(ctx.guild.roles, name='Members++')
-                await ctx.author.add_roles(role)
+                role = discord.utils.get(guild.roles, name='Members++')
+                await member.add_roles(role)
                 c.execute("INSERT INTO users(user_id, license_code, expiration_date) VALUES (?,?,?)",
                           (ctx.author.id, licence_code, expiration_date))
                 conn.commit()
@@ -72,10 +84,13 @@ async def licence(ctx, licence_code: str):
                 await ctx.send(
                     f'{ctx.author.mention} Başarıyla {left_days} günlüğüne Member++ rolüne sahip oldu!')
                 print(f'Added role to {ctx.author}.')
-                channel = discord.utils.get(ctx.guild.channels, name="auto-license-log")
-                await channel.send(
-                    f'{ctx.author.mention} lisansı {licence_code} ile {left_days} '
-                    f'günlüğüne Member++ rolüne sahip oldu!')
+                channel = bot.get_channel(config["log_channel_id"])
+                if channel is None:
+                    print("Couldn't find 'auto-license-log' channel")
+                else:
+                    await channel.send(
+                        f'{ctx.author.mention} lisansı {licence_code} ile {left_days} '
+                        f'günlüğüne Member++ rolüne sahip oldu!')
             else:
                 await ctx.send(f'{ctx.author.mention} lisansınızın süresi çok az kaldı veya doldu.')
         conn.close()
